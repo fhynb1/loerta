@@ -1,0 +1,5 @@
+docker部署步骤
+1.代码打包
+2.写dockerfile构建镜像
+3.compose管理容器
+4.跑compose部署

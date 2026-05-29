@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  fhy2002:
+    build:
+      context: .
+      dockerfile: Dockerfile.dist
+    container_name: fhy2002
+    ports:
+      - "8888:8080"
+    restart: always
