@@ -1,0 +1,7 @@
+node_modules
+dist
+.npm-cache
+.npm-cache-2
+.npm-cache-3
+.git
+*.log
