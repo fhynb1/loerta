@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表单数据管理</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, "Microsoft YaHei", sans-serif;
+            color: #172033;
+            background: #f5f7fb;
+        }
+
+        .app {
+            width: min(1280px, calc(100% - 32px));
+            margin: 32px auto;
+        }
+
+        .topbar,
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .topbar {
+            margin-bottom: 18px;
+        }
+
+        h1,
+        h2 {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        h1 {
+            font-size: 26px;
+        }
+
+        h2 {
+            font-size: 18px;
+        }
+
+        .actions,
+        .row-actions,
+        .form-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button,
+        .download {
+            border: 0;
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-size: 14px;
+            line-height: 1.2;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        button {
+            color: #fff;
+            background: #2368d8;
+        }
+
+        button.secondary,
+        .download {
+            color: #172033;
+            background: #e7ecf5;
+        }
+
+        button.danger {
+            color: #fff;
+            background: #c0362c;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.55;
+        }
+
+        .panel {
+            background: #fff;
+            border: 1px solid #e2e7f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 18px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px 16px;
+            margin-top: 16px;
+        }
+
+        label {
+            display: grid;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 10px 11px;
+            font: inherit;
+            background: #fff;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        textarea {
+            min-height: 82px;
+            resize: vertical;
+        }
+
+        .span-2 {
+            grid-column: span 2;
+        }
+
+        .span-4 {
+            grid-column: span 4;
+        }
+
+        .status {
+            min-height: 22px;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .status.error {
+            color: #b42318;
+        }
+
+        .status.success {
+            color: #067647;
+        }
+
+        .mode-badge {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            border-radius: 6px;
+            padding: 5px 10px;
+            color: #475467;
+            background: #f1f5f9;
+            font-size: 13px;
+        }
+
+        .table-wrap {
+            margin-top: 14px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 1280px;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th,
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e2e7f0;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            white-space: nowrap;
+            color: #475467;
+            background: #f8fafc;
+        }
+
+        .select-cell {
+            width: 54px;
+            text-align: center;
+        }
+
+        tr.selected {
+            background: #eef5ff;
+        }
+
+        .empty {
+            padding: 26px;
+            color: #667085;
+            text-align: center;
+        }
+
+        .compact {
+            padding: 7px 10px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 900px) {
+            .topbar,
+            .section-title {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .form-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .span-4 {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .app {
+                width: min(100% - 20px, 1280px);
+                margin: 16px auto;
+            }
+
+            .actions,
+            .form-actions {
+                align-items: stretch;
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .actions > *,
+            .form-actions > * {
+                width: 100%;
+                text-align: center;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .span-2,
+            .span-4 {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+<main class="app">
+    <div class="topbar">
+        <h1>表单数据填写与导出</h1>
+        <div class="actions">
+            <button class="secondary" type="button" id="refreshBtn">刷新列表</button>
+            <button type="button" id="exportSelectedBtn" disabled>导出选中记录</button>
+            <a class="download" href="/api/records/export">导出全部 Excel</a>
+        </div>
+    </div>
+
+    <section class="panel">
+        <div class="section-title">
+            <h2>录入信息</h2>
+            <span id="modeBadge" class="mode-badge">新增模式</span>
+        </div>
+
+        <form id="recordForm">
+            <input type="hidden" name="id">
+            <div class="form-grid">
+                <label>
+                    日期
+                    <input type="date" name="recordDate" required>
+                </label>
+                <label>
+                    姓名
+                    <input type="text" name="name" maxlength="100" required>
+                </label>
+                <label>
+                    电话
+                    <input type="tel" name="phone" maxlength="30" required>
+                </label>
+                <label>
+                    年龄
+                    <input type="number" name="age" min="0" max="150">
+                </label>
+                <label class="span-4">
+                    项目内容
+                    <textarea name="projectContent" maxlength="1000"></textarea>
+                </label>
+                <label>
+                    操作手
+                    <input type="text" name="operator" maxlength="100">
+                </label>
+                <label>
+                    针剂医生
+                    <input type="text" name="injectionDoctor" maxlength="100">
+                </label>
+                <label>
+                    针剂接待
+                    <input type="text" name="injectionReceptionist" maxlength="100">
+                </label>
+                <label>
+                    成交总额
+                    <input type="number" name="totalAmount" min="0" step="0.01">
+                </label>
+                <label>
+                    医生手工
+                    <input type="number" name="doctorFee" min="0" step="0.01">
+                </label>
+                <label>
+                    护士手工
+                    <input type="number" name="nurseFee" min="0" step="0.01">
+                </label>
+                <div class="span-2"></div>
+                <div class="form-actions">
+                    <button type="submit" id="submitBtn">保存</button>
+                    <button class="secondary" type="button" id="resetBtn">清空/新增</button>
+                </div>
+            </div>
+            <div id="status" class="status"></div>
+        </form>
+    </section>
+
+    <section class="panel">
+        <div class="section-title">
+            <h2>记录列表</h2>
+            <span class="mode-badge" id="recordCount">0 条记录</span>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th class="select-cell">选择</th>
+                    <th>操作</th>
+                    <th>日期</th>
+                    <th>姓名</th>
+                    <th>电话</th>
+                    <th>年龄</th>
+                    <th>项目内容</th>
+                    <th>操作手</th>
+                    <th>针剂医生</th>
+                    <th>针剂接待</th>
+                    <th>成交总额</th>
+                    <th>医生手工</th>
+                    <th>护士手工</th>
+                </tr>
+                </thead>
+                <tbody id="recordBody">
+                <tr>
+                    <td class="empty" colspan="13">加载中...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<script>
+    const form = document.querySelector("#recordForm");
+    const statusEl = document.querySelector("#status");
+    const recordBody = document.querySelector("#recordBody");
+    const refreshBtn = document.querySelector("#refreshBtn");
+    const exportSelectedBtn = document.querySelector("#exportSelectedBtn");
+    const resetBtn = document.querySelector("#resetBtn");
+    const submitBtn = document.querySelector("#submitBtn");
+    const modeBadge = document.querySelector("#modeBadge");
+    const recordCount = document.querySelector("#recordCount");
+
+    let recordsCache = [];
+    let selectedId = null;
+    let exportSelectedId = null;
+
+    resetForm();
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const id = form.id.value;
+        const editing = id !== "";
+        setStatus(editing ? "正在更新..." : "正在保存...", "");
+
+        const payload = buildPayload();
+        const url = editing ? `/api/records/${id}` : "/api/records";
+        const method = editing ? "PUT" : "POST";
+
+        try {
+            const response = await fetch(url, {
+                method,
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({message: editing ? "更新失败" : "保存失败"}));
+                throw new Error(error.message || (editing ? "更新失败" : "保存失败"));
+            }
+            setStatus(editing ? "更新成功" : "保存成功", "success");
+            resetForm();
+            await loadRecords();
+        } catch (error) {
+            setStatus(error.message, "error");
+        }
+    });
+
+    refreshBtn.addEventListener("click", loadRecords);
+
+    exportSelectedBtn.addEventListener("click", () => {
+        if (!exportSelectedId) {
+            setStatus("请先勾选一条记录", "error");
+            return;
+        }
+        window.location.href = `/api/records/export?ids=${encodeURIComponent(exportSelectedId)}`;
+    });
+
+    resetBtn.addEventListener("click", () => {
+        resetForm();
+        setStatus("", "");
+        renderRecords(recordsCache);
+    });
+
+    recordBody.addEventListener("change", (event) => {
+        const checkbox = event.target.closest("input[data-select-id]");
+        if (!checkbox) {
+            return;
+        }
+        exportSelectedId = checkbox.checked ? Number(checkbox.dataset.selectId) : null;
+        exportSelectedBtn.disabled = !exportSelectedId;
+        renderRecords(recordsCache);
+    });
+
+    recordBody.addEventListener("click", async (event) => {
+        const button = event.target.closest("button[data-action]");
+        if (!button) {
+            return;
+        }
+
+        const id = Number(button.dataset.id);
+        if (button.dataset.action === "edit") {
+            const record = recordsCache.find((item) => item.id === id);
+            if (record) {
+                fillForm(record);
+                setStatus("已载入记录，可修改后点击更新", "");
+                renderRecords(recordsCache);
+                window.scrollTo({top: 0, behavior: "smooth"});
+            }
+            return;
+        }
+
+        if (button.dataset.action === "delete") {
+            const record = recordsCache.find((item) => item.id === id);
+            const label = record ? `${record.recordDate} ${record.name}` : `ID ${id}`;
+            if (!confirm(`确认删除这条记录？\n${label}`)) {
+                return;
+            }
+            await deleteRecord(id);
+        }
+    });
+
+    async function loadRecords() {
+        const response = await fetch("/api/records");
+        if (!response.ok) {
+            recordBody.innerHTML = `<tr><td class="empty" colspan="13">列表加载失败</td></tr>`;
+            recordCount.textContent = "0 条记录";
+            return;
+        }
+        recordsCache = await response.json();
+        if (!recordsCache.some((record) => record.id === exportSelectedId)) {
+            exportSelectedId = null;
+            exportSelectedBtn.disabled = true;
+        }
+        renderRecords(recordsCache);
+    }
+
+    async function deleteRecord(id) {
+        setStatus("正在删除...", "");
+        try {
+            const response = await fetch(`/api/records/${id}`, {method: "DELETE"});
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({message: "删除失败"}));
+                throw new Error(error.message || "删除失败");
+            }
+            if (selectedId === id) {
+                resetForm();
+            }
+            if (exportSelectedId === id) {
+                exportSelectedId = null;
+                exportSelectedBtn.disabled = true;
+            }
+            setStatus("删除成功", "success");
+            await loadRecords();
+        } catch (error) {
+            setStatus(error.message, "error");
+        }
+    }
+
+    function renderRecords(records) {
+        recordCount.textContent = `${records.length} 条记录`;
+        if (records.length === 0) {
+            recordBody.innerHTML = `<tr><td class="empty" colspan="13">暂无数据</td></tr>`;
+            return;
+        }
+
+        recordBody.innerHTML = records.map((record) => `
+            <tr class="${selectedId === record.id || exportSelectedId === record.id ? "selected" : ""}">
+                <td class="select-cell">
+                    <input type="checkbox" data-select-id="${record.id}" ${exportSelectedId === record.id ? "checked" : ""} aria-label="选择 ${escapeHtml(record.name)}">
+                </td>
+                <td>
+                    <div class="row-actions">
+                        <button class="secondary compact" type="button" data-action="edit" data-id="${record.id}">编辑</button>
+                        <button class="danger compact" type="button" data-action="delete" data-id="${record.id}">删除</button>
+                    </div>
+                </td>
+                <td>${escapeHtml(record.recordDate)}</td>
+                <td>${escapeHtml(record.name)}</td>
+                <td>${escapeHtml(record.phone)}</td>
+                <td>${record.age ?? ""}</td>
+                <td>${escapeHtml(record.projectContent)}</td>
+                <td>${escapeHtml(record.operator)}</td>
+                <td>${escapeHtml(record.injectionDoctor)}</td>
+                <td>${escapeHtml(record.injectionReceptionist)}</td>
+                <td>${formatMoney(record.totalAmount)}</td>
+                <td>${formatMoney(record.doctorFee)}</td>
+                <td>${formatMoney(record.nurseFee)}</td>
+            </tr>
+        `).join("");
+    }
+
+    function fillForm(record) {
+        selectedId = record.id;
+        form.id.value = record.id;
+        form.recordDate.value = record.recordDate || "";
+        form.name.value = record.name || "";
+        form.phone.value = record.phone || "";
+        form.age.value = record.age ?? "";
+        form.projectContent.value = record.projectContent || "";
+        form.operator.value = record.operator || "";
+        form.injectionDoctor.value = record.injectionDoctor || "";
+        form.injectionReceptionist.value = record.injectionReceptionist || "";
+        form.totalAmount.value = record.totalAmount ?? "";
+        form.doctorFee.value = record.doctorFee ?? "";
+        form.nurseFee.value = record.nurseFee ?? "";
+        submitBtn.textContent = "更新";
+        modeBadge.textContent = `编辑模式：ID ${record.id}`;
+    }
+
+    function resetForm() {
+        selectedId = null;
+        form.reset();
+        form.id.value = "";
+        form.recordDate.valueAsDate = new Date();
+        submitBtn.textContent = "保存";
+        modeBadge.textContent = "新增模式";
+    }
+
+    function buildPayload() {
+        const payload = Object.fromEntries(new FormData(form).entries());
+        delete payload.id;
+        ["age", "totalAmount", "doctorFee", "nurseFee"].forEach((key) => {
+            payload[key] = payload[key] === "" ? null : Number(payload[key]);
+        });
+        return payload;
+    }
+
+    function setStatus(message, type) {
+        statusEl.textContent = message;
+        statusEl.className = `status ${type}`;
+    }
+
+    function formatMoney(value) {
+        return value == null ? "" : Number(value).toFixed(2);
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    loadRecords();
+</script>
+</body>
+</html>
