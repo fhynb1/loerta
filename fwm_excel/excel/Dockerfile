@@ -1,4 +1,9 @@
-FROM ubuntu:latest
-LABEL authors="风缘"
+FROM eclipse-temurin:17-jre
 
-ENTRYPOINT ["top", "-b"]
+WORKDIR /app
+
+COPY target/excel-0.0.1-SNAPSHOT.jar app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar",docker  "app.jar"]
