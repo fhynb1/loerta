@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: excel
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: mysql
+
+  template:
+    metadata:
+      labels:
+        app: mysql
+
+    spec:
+      imagePullSecrets:
+        - name: aliyun-registry
+
+      containers:
+        - name: mysql
+
+          image: crpi-glskctb5mzkjyoo7.cn-hangzhou.personal.cr.aliyuncs.com/fhyregistry/mysql:8
+
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "654321"
+
+            - name: MYSQL_DATABASE
+              value: "excel"
+
+            - name: MYSQL_USER
+              value: "fhy"
+
+            - name: MYSQL_PASSWORD
+              value: "654321"
+
+          ports:
+            - containerPort: 3306
+
+      
+    

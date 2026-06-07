@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: excel-ingress
+  namespace: excel
+
+spec:
+  rules:
+  - host: excel.fwm88888888.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: excel-app
+            port:
+              number: 8080

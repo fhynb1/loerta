@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: excel-app
+  namespace: excel
+spec:
+  selector:
+    app: excel-app
+
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30080
+
+  type: NodePort

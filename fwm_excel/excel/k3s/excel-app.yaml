@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: excel-app
+  namespace: excel
+spec:
+  replicas: 6
+
+  selector:
+    matchLabels:
+      app: excel-app
+
+  template:
+    metadata:
+      labels:
+        app: excel-app
+
+    spec:
+      imagePullSecrets:
+        - name: aliyun-registry
+
+      containers:
+        - name: excel-app
+          image: crpi-glskctb5mzkjyoo7.cn-hangzhou.personal.cr.aliyuncs.com/fhyregistry/excel-app:latest
+
+          ports:
+            - containerPort: 8080
+
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://mysql:3306/excel?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai"
+
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "fhy"
+
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "654321"
